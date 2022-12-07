@@ -40,6 +40,60 @@ def moveJ(x, y, z, rx, ry, rz, a, v, s):
     print(message)
     s.send((message).encode('utf8'))
 
+
+# Sample usage:
+# map(10, 1, 100, 1, 1000) => 100
+# map(10, 2, 5, 0, 10 ) => 10
+# map(10, 5, 20, 1, 2) => 1.25 
+def mapV(v, min_sv, max_sv, min_dv, max_dv):
+    if (v >= max_sv):
+        return max_dv
+    if (v <= min_sv):
+        return min_dv
+    res = ((v - min_sv)/(max_sv-min_sv))*(max_dv - min_dv) + min_dv 
+    print(res)
+    return res
+
+# ----- Acceleration and Velocity specs for machine -----
+a=1.39626
+v=1.04719
+
+# Parameters to toggle pen. 
+max_z = 0.2 
+min_z = 0.1
+
+# Limits for X, Y Coordinates. 
+min_x = -0.5
+max_x = -0.1
+min_y = -0.4
+max_y = -0.1
+
+# Limits for canvas size while parsing JSON Coordinates. 
+canvas_min_x = 0
+canvas_max_x = 0
+canvas_min_y = 200
+canvas_max_y = 200
+
+# Pen orientation parameters. 
+rx = 0.0
+ry = 1.75
+rz = 0.0
+
+# ----- Basic movement commands -----
+def togglePen(X, Y, Z):
+    if (Z == max_z):
+        moveJ(X, Y, min_z, rx, ry, rz, a, v, s)
+        return min_z
+    else: 
+        moveJ(X, Y, max_z, rx, ry,rz, a, v, s)
+        return max_z
+
+# ----- Basic movement commands -----
+def MoveTo(X, Y, Z):
+    Xi = mapV(X,canvas_min_x, canvas_max_x, min_x, max_x)
+    Yi = mapV(Y,canvas_min_y, canvas_max_y, min_y, max_y)
+    moveJ(Xi,Yi,Z,rx,ry,rz, a, v, s)
+
 # ----- Machine Set Up -----
 # Robot IP Address. 
 # Note that to control the robot, it must have the corresponding DNS connection!
@@ -55,20 +109,43 @@ s.connect((HOST, PORT))
 s.send(("set_digital_out(0,True)" + "\n").encode('utf8'))
 s.send(("set_digital_out(0,False)" + "\n").encode('utf8'))
 
-
-# ----- Acceleration and Velocity specs for machine -----
-a=1.39626
-v=1.04719
-
-# Commands for the actual robot written in URScript.
-# Basic movement commands, i.e. Rectangle:
-
-# Basic robot movement for drawing a rectangle. 
+# CONTROL GROUP
 # Home base:
-moveJ(-0.5, -0.5, 0.5, -1.0, 4.5, -1, a, v, s)
+x = -0.1
+y = -0.1
+z =  0.2 # Pen is toggled up 
+
+moveJ(-0.1, -0.1, 0.2, 0, 1.75, 0, a, v, s)
 time.sleep(4)
 
+# Rectangle:
+moveJ(-0.5, -0.1, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.2, -0.1, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.2, -0.4, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.5, -0.4, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.5, -0.1, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(4)
 
+# EXPERIMENTAL GROUP 
+# Home base:
+moveJ(-0.5, -0.1, 0.2, 0, 1.75, 0, a, v, s)
+time.sleep(4)
+
+# Rectangle:
+moveJ(-0.5, -0.1, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.2, -0.1, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.2, -0.4, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.5, -0.4, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
+moveJ(-0.5, -0.1, 0.1, 0, 1.75, 0, a, v, s)
+time.sleep(2)
 data = s.recv(1024)
 
 s.close()
