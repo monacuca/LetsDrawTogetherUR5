@@ -16,6 +16,12 @@ from xml.dom import minidom
 # and an RDTE protocol for TCP/IP control of the robot. This is in case you want to directly
 # write/read instructions over TCP using UR5Script. 
 
+# Basic method that doesn't exist in this version of Python.
+# It was literally faster just to write it myself. 
+def dist(x1,y1,x2,y2):
+    d = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+    return d
+
 # ----- URScript parsing helpers -----
 # MoveL: Moves using unverse kinematics
 def moveL(x, y, z, rx, ry, rz, a, v, s):
@@ -85,7 +91,7 @@ min_y = 0.3
 max_y = 0.5 
 min_x = 0.3
 max_x = 0.5
-max_dist = math.dist([min_x, min_y], [max_x, max_y])
+max_dist = dist(min_x, min_y, max_x, max_y)
 
 # Initial points, no need to change this for now. 
 Xp = min_x
@@ -119,7 +125,7 @@ def togglePen(X1, Y1, Z):
 def MoveTo(X, Y, Z):
     Xi = mapV(X,canvas_min_x, canvas_max_x, min_x, max_x)
     Yi = mapV(Y,canvas_min_y, canvas_max_y, min_y, max_y)
-    distance = math.dist(Xp, Yp, Xi, Yi)
+    distance = dist(Xp, Yp, Xi, Yi)
 
     # Move to path:
     moveL(Xi,Yi,Z,rx,ry,rz, a, v, s)
