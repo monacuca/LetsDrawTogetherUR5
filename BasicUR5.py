@@ -8,7 +8,10 @@ import time
 # write/read instructions over TCP using UR5Script. 
 
 # ----- URScript parsing helpers -----
-# MoveL: Moves using unverse kinematics
+# MoveL: Moves directly/linearly using inverse kinematics.
+# Note: Since we are just giving it a pose, specifics don't matter.
+# Note: MoveL is easier to control the specific path, but harder to work with.
+# Use MoveJ whenever possible.
 def moveL(x, y, z, rx, ry, rz, a, v, s):
     # Format pose for moveL command. 
     pose = ("p[" + str(x) + ", " \
@@ -24,7 +27,10 @@ def moveL(x, y, z, rx, ry, rz, a, v, s):
     print(message)
     s.send((message).encode('utf8'))
 
-# MoveJ: Directly controls joint rotation of the UR5
+# MoveJ: Directly controls joint rotation of the UR5.
+# Note: You might notice that the movement from one point to the other is not linear
+# when using this.
+# Use this whenever posible. 
 def moveJ(x, y, z, rx, ry, rz, a, v, s):
     # Format pose for moveJ command. 
     pose = ("p[" + str(x) + ", " \
@@ -41,11 +47,11 @@ def moveJ(x, y, z, rx, ry, rz, a, v, s):
     s.send((message).encode('utf8'))
 
 # ----- Machine Set Up -----
-# Robot IP Address. 
+# Robot IP Address.
 # Note that to control the robot, it must have the corresponding DNS connection!
-HOST = "169.254.154.223"
+HOST = "169.254.154.223" # This is the IP address of the Studio's robot.
 
-# UR5 R/obot port. DO NOT CHANGE THIS. 
+# UR5 Robot port. Probably don't change this.
 PORT = 30002
 
 # Set up socket. 
@@ -61,13 +67,11 @@ a=1.39626
 v=1.04719
 
 # Commands for the actual robot written in URScript.
-# Basic movement commands, i.e. Rectangle:
+# Basic movement commands: 
 
-# Basic robot movement for drawing a rectangle. 
-# Home base:
 moveJ(-0.5, -0.5, 0.5, -1.0, 4.5, -1, a, v, s)
-time.sleep(4)
-
+time.sleep(3)
+moveJ(0.3, 0.3, -0.115, 0, 3, 0, a, v, s)
 
 data = s.recv(1024)
 

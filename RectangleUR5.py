@@ -63,7 +63,6 @@ v=1.04719
 # Commands for the actual robot written in URScript.
 # Basic movement commands, i.e. Rectangle:
 
-# CONTROL GROUP
 # Home base:
 moveJ(-0.1, -0.1, 0.2, 0, 1.75, 0, a, v, s)
 time.sleep(4)
@@ -80,7 +79,6 @@ time.sleep(2)
 moveJ(-0.5, -0.1, 0.1, 0, 1.75, 0, a, v, s)
 time.sleep(4)
 
-# EXPERIMENTAL GROUP 
 # Home base:
 moveJ(-0.5, -0.1, 0.2, 0, 1.75, 0, a, v, s)
 time.sleep(4)
