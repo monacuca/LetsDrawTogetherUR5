@@ -3,19 +3,21 @@
 # This probably is useless to you unless you are Lauren. Look at DrawUR5.py for actual pointers.
 
 # ---------------------------------------------------------------------------------------
-debug = True # For Angie or Lauren. 
-use_moveL = True # For Angie or Lauren. 
+debug = True          # For Angie or Lauren. 
+use_moveL = True      # For Angie or Lauren. 
+training_mode = False # If training mode is on, then round turns = 2. 
 # ---------------------------------------------------------------------------------------
-
 # THIS IS THE CODE THAT WILL BE USED FOR OUR HRI STUDY. 
 # STUDY PARAMS:
-control = True # Is participant control or experimental. 
-round_len = 30 # Robot and human take approximately 30 seconds to draw each.
-round_turns = 5 # 5 turns each round. One round takes 5 minutes. 
-bot_line_num = 6 # Number of lines robot draws before it delegates turn to human. 
+
+control = False # Is participant control or experimental. 
+round_len = 60 # Robot and human take approximately 30 seconds to draw each.
+round_turns = 5 # 5 turns each round. One round takes 10 minutes. 
+training_turns = 1 # Will only be used if training mode is on. 
+bot_line_num = 10 # Number of lines robot draws before it delegates turn to human. 
 
 # Robot height while inactive or in home position. 
-home_Z = -0.05
+home_Z = 0.1
 
 # If we do more than one round. 
 # Ex: if we do 5 rounds, this means people will be going through 25 minutes of drawing. 
@@ -29,7 +31,10 @@ total_time = round_len*2*round_turns*round_num
 # Ex. If round_num == 3, we would have this:
 # images = ["study/study1.svg", "study/study2.svg", "study/study3.svg"]
 
-images = ["study/test.svg"]
+if (training_mode):
+    images = ["study/training.svg"]
+else: 
+    images = ["study/test2.svg"]
 # ---------------------------------------------------------------------------------------
 import socket
 import time
@@ -106,7 +111,7 @@ v = 1.04719
 # ----- Parameters for interpreting SVG art and mapping it to robot's coordinate system -----
 # Parameters to toggle pen. 
 max_z = -0.08 
-min_z = -0.095
+min_z = -0.110
 
 # Limits for X, Y Coordinates. 
 # If these are changed it's likely robot might do protective stops, 
@@ -130,9 +135,9 @@ Yp = min_y
 # Limits for canvas size while parsing SVG Coordinates. 
 # Square canvas works best unless you want to do some geometry.
 canvas_min_x = 0
-canvas_max_x = 800
+canvas_max_x = 210
 canvas_min_y = 0
-canvas_max_y = 1200
+canvas_max_y = 210
 
 # Pen orientation parameters.
 rx = 0.0
@@ -149,21 +154,22 @@ def togglePen(X1, Y1, Z):
         else:
             moveJ(X, Y, min_z, rx, ry, rz, a, v, s)
         
-        time.sleep(0.5) # Toggle movement for half a second.
+        time.sleep(2) # Toggle movement for half a second.
         return min_z
     else: 
         moveL(X, Y, max_z, rx, ry,rz, a, v, s)
-        time.sleep(0.5)
+        time.sleep(2)
         return max_z
 
 def MoveTo(X, Y, Z):
+    Xi = mapV(X,canvas_min_x, canvas_max_x, min_x, max_x)
+    Yi = mapV(Y,canvas_min_y, canvas_max_y, min_y, max_y)
+    # distance = dist(Xp, Yp, Xi, Yi)
+
+    
     if (debug):
         print("Moving To: (%.2f, %.2f)" % (Xi, Yi))
     
-    Xi = mapV(X,canvas_min_x, canvas_max_x, min_x, max_x)
-    Yi = mapV(Y,canvas_min_y, canvas_max_y, min_y, max_y)
-    distance = dist(Xp, Yp, Xi, Yi)
-
     # Move to path:
     if (use_moveL):
         moveL(Xi,Yi,Z,rx,ry,rz, a, v, s)
@@ -171,7 +177,7 @@ def MoveTo(X, Y, Z):
         moveJ(Xi,Yi,Z,rx,ry,rz, a, v, s)
 
     # Sleep until next command, relative to the distance of the path:
-    sleep = mapV(distance, 0, max_dist, 0, 6)
+    sleep = 2 #mapV(distance, 0, max_dist, 0, 6)
     time.sleep(sleep)
     
     # Update previous points
@@ -181,7 +187,7 @@ def MoveTo(X, Y, Z):
 def DrawLine(X1,Y1,X2,Y2):
     Z = max_z
     MoveTo(X1,Y1,Z) # Move to pen location
-    togglePen(X1,Y1,Z) # Pen goes down
+    Z = togglePen(X1,Y1,Z) # Pen goes down
     MoveTo(X2,Y2,Z) # Move to second point 
     
     # Continous paths should also not have a pen raise. 
@@ -192,13 +198,13 @@ def DrawLine(X1,Y1,X2,Y2):
 def Take_Turn(X1,Y1):
     if (control):
         # Move back home. 
-        moveL(min_x, min_y, max_z, rx, ry, rz, a, v, s)
+        moveL(min_x, min_y, home_Z, rx, ry, rz, a, v, s)
 
         # Human turn to draw.
         time.sleep(round_len)
     else: 
         # Move to the next point. 
-        MoveTo(X1, Y1, max_z)
+        MoveTo(X1, Y1, home_Z)
         time.sleep(round_len)
 
 
@@ -236,16 +242,17 @@ for image in images:
         path = parse_path(path_string)
         for e in path:
             if isinstance(e, Line):
-                count += 1
                 X1 = e.start.real
                 Y1 = e.start.imag
                 X2 = e.end.real
                 Y2 = e.end.imag
 
                 if ((count % bot_line_num) == 0): 
-                    Take_Turn(X2, Y2)
-                
+                    Take_Turn(X1, Y1)
+
                 DrawLine(X1,Y1,X2,Y2)
+                
+                count += 1
                 if (debug):
                     print("Point in SVG: (%.2f, %.2f) - (%.2f, %.2f)" % (X1, X1, X2, X2))
                     
