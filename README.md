@@ -12,6 +12,8 @@ It's important to know a couple of things:
 
 - You can also use RoboDK, which supports various UR robots. 
 
+If you are interested in the script we used for our study, see: HRIStudy.Py
+
 This repo was programmed and managed by:
 Angelica Bonilla Fominaya 
 Carnegie Mellon University. 2022
